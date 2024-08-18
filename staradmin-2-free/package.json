@@ -75,7 +75,7 @@
     "x-editable": "^1.5.1"
   },
   "devDependencies": {
-    "browser-sync": "^2.29.3",
+    "browser-sync": "^3.0.2",
     "compass-mixins": "^0.12.12",
     "del": "^6.1.1",
     "gulp": "^4.0.2",
