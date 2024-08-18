@@ -1,4 +1,46 @@
 <!DOCTYPE html>
+
+<?php
+session_start();
+
+include('db_connection.php'); 
+
+// Check if user is logged in and is an admin
+if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+    // Redirect to error404 page if not an admin
+    header("Location: error404.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+$user_query = $conn->prepare("SELECT * FROM employees WHERE user_id = ?");
+$user_query->bind_param("i", $user_id);
+$user_query->execute();
+$user_result = $user_query->get_result();
+
+if ($user_result->num_rows === 1) {
+    $user = $user_result->fetch_assoc();
+    $firstName = $user['first_name'];
+    $lastName = $user['last_name'];
+    $name = htmlspecialchars($firstName . ' ' . $lastName);
+    $email = $user['email'];
+} else {
+    $username = "Unknown User";
+    $email = "N/A";
+}
+
+$user_query->close();
+
+$employee_query = $conn->prepare("SELECT * FROM employees");
+$employee_query->execute();
+$employee_result = $employee_query->get_result();
+$employees = $employee_result->fetch_all(MYSQLI_ASSOC);
+
+$employee_query->close();
+$conn->close();
+
+?>
+
 <html lang="en">
   <head>
     <!-- Required meta tags -->
@@ -85,15 +127,20 @@
             </li>
             <li class="nav-item dropdown d-none d-lg-block user-dropdown">
               <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <img class="img-xs rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image"> </a>
+                <img class="img-xs rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image"> 
+              </a>
               <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
                 <div class="dropdown-header text-center">
                   <img class="img-md rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image">
-                  <p class="mb-1 mt-3 fw-semibold">Allen Moreno</p>
-                  <p class="fw-light text-muted mb-0">allenmoreno@gmail.com</p>
+                  <p class="mb-1 mt-3 fw-semibold"><?php echo htmlspecialchars($name); ?></p>
+                  <p class="fw-light text-muted mb-0"><?php echo htmlspecialchars($email); ?></p>
                 </div>
-                <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile <span class="badge badge-pill badge-danger">A</span></a>
-                <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Sign Out</a>
+                <a class="dropdown-item" href="profile.php">
+                  <i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile
+                </a>
+                <a class="dropdown-item" href="logout.php">
+                  <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i> Sign Out
+                </a>
               </div>
             </li>
           </ul>
@@ -108,7 +155,7 @@
         <nav class="sidebar sidebar-offcanvas" id="sidebar">
           <ul class="nav">
             <li class="nav-item">
-              <a class="nav-link" href="admin_dahboard.html">
+              <a class="nav-link" href="admin_dahboard.php">
                 <i class="mdi mdi-grid-large menu-icon"></i>
                 <span class="menu-title">Dashboard</span>
               </a>
@@ -116,13 +163,13 @@
             <li class="nav-item nav-category">Options</li>
             
             <li class="nav-item">
-              <a class="nav-link" href="salary_slips.html">
+              <a class="nav-link" href="salary_slips.php">
                 <i class="menu-icon mdi mdi-file-document"></i>
                 <span class="menu-title">Salary Slips</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="users.html">
+              <a class="nav-link" href="users.php">
                 <i class="menu-icon mdi mdi-account-circle-outline"></i>
                 <span class="menu-title">Users</span>
               </a>
@@ -139,12 +186,12 @@
                   <div class="card card-rounded">
                     <div class="card-body">
                       <div class="d-sm-flex justify-content-between align-items-start">
-                        <div>
+                      <div>
                           <h4 class="card-title card-title-dash">StarAdmin Employees</h4>
-                          <p class="card-subtitle card-subtitle-dash">You have 50 Employees</p>
+                          <p class="card-subtitle card-subtitle-dash">You have <?php echo count($employees); ?> Employees</p>
                         </div>
                         <div>
-                          <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i> <a href="add_user.html" style="color:white;">Add new member</a></button>
+                        <a href="add_user.php" style="color:white;"><button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i> Add new member</button></a>
                         </div>
                       </div>
                       <div class="table-responsive  mt-1">
@@ -158,46 +205,44 @@
                                 </div>
                               </th>
                               <th>Employee</th>
-                              <th>Date Joinned</th>
-                              <th>Basic Salary</th>
+                              <th>Date of Birth</th>
+                              <th>Sex</th>
                               <th>Position</th>
                               <th>Email</th>
                             </tr>
                           </thead>
                           <tbody>
-                            <tr>
-                              <td>
-                                <div class="form-check form-check-flat mt-0">
-                                  <label class="form-check-label">
-                                    <input type="checkbox" class="form-check-input" aria-checked="false"><i class="input-helper"></i></label>
-                                </div>
-                              </td>
-                              <td>
-                                <div class="d-flex ">
-                                  <img src="assets/images/faces/face1.jpg" alt="">
-                                  <div>
-                                    <h6>Brandon Washington</h6>
-                                    <p>Head admin</p>
-                                  </div>
-                                </div>
-                              </td>
-                              <td>
-                                <h6>Company name 1</h6>
-                                <p>company type</p>
-                              </td>
-                              <td>
-                                <h6>Company name 1</h6>
-                                <p>company type</p>
-                              </td>
-                              <td>
-                                <div class="badge badge-opacity-warning">Frontend Developer</div>
-                              </td>
-                              <td>
-                                <h6>Company name 1</h6>
-                                <p>company type</p>
-                              </td>
-                            </tr>
-                          </tbody>
+                                                <?php foreach ($employees as $employee): ?>
+                                                <tr>
+                                                    <td>
+                                                        <div class="form-check form-check-flat mt-0">
+                                                            <label class="form-check-label">
+                                                                <input type="checkbox" class="form-check-input" aria-checked="false"><i class="input-helper"></i></label>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex ">
+                                                                <div>
+                                                                    <h6><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?></h6>
+                                                                    <p><?php echo htmlspecialchars($employee['position']); ?></p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <h6><?php echo htmlspecialchars($employee['dob']); ?></h6>
+                                                        </td>
+                                                        <td>
+                                                            <h6><?php echo htmlspecialchars($employee['gender']); ?></h6>
+                                                        </td>
+                                                        <td>
+                                                            <div class="badge badge-opacity-warning"><?php echo htmlspecialchars($employee['position']); ?></div>
+                                                        </td>
+                                                        <td>
+                                                            <h6><?php echo htmlspecialchars($employee['email']); ?></h6>
+                                                        </td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
                         </table>
                       </div>
                     </div>

@@ -1,12 +1,11 @@
 <?php
 // Database credentials
 $host = 'localhost';
-$port = 3306;
 $user = 'root';
-$password = 'root';
+$password = '';
 $dbname = 'star_admin';
 
-$conn = new mysqli($host, $user, $password, $dbname, $port);
+$conn = new mysqli($host, $user, $password, $dbname);
 
 // Check the connection
 if ($conn->connect_error) {
@@ -14,5 +13,5 @@ if ($conn->connect_error) {
     exit();
 }
 
-$conn->close();
+
 ?>
