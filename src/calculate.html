@@ -4,7 +4,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Star Admin | User </title>
+    <title>Star Admin | Admin</title>
     <!-- plugins:css -->
     <link rel="stylesheet" href="assets/vendors/feather/feather.css">
     <link rel="stylesheet" href="assets/vendors/mdi/css/materialdesignicons.min.css">
@@ -46,8 +46,8 @@
         <div class="navbar-menu-wrapper d-flex align-items-top">
           <ul class="navbar-nav">
             <li class="nav-item fw-semibold d-none d-lg-block ms-0">
-              <h1 class="welcome-text">Good Morning, <span class="text-black fw-bold">John Doe</span></h1>
-              <h3 class="welcome-sub-text">Your performance summary this week </h3>
+              <h1 class="welcome-text">Salary <span class="text-black fw-bold">Calculate</span></h1>
+              <h3 class="welcome-sub-text">Manage the Users </h3>
             </li>
           </ul>
           <ul class="navbar-nav ms-auto">
@@ -92,7 +92,7 @@
                   <p class="mb-1 mt-3 fw-semibold">Allen Moreno</p>
                   <p class="fw-light text-muted mb-0">allenmoreno@gmail.com</p>
                 </div>
-                <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile</a>
+                <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile <span class="badge badge-pill badge-danger">A</span></a>
                 <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Sign Out</a>
               </div>
             </li>
@@ -108,7 +108,7 @@
         <nav class="sidebar sidebar-offcanvas" id="sidebar">
           <ul class="nav">
             <li class="nav-item">
-              <a class="nav-link" href="User Dashboard.html">
+              <a class="nav-link" href="admin_dahboard.html">
                 <i class="mdi mdi-grid-large menu-icon"></i>
                 <span class="menu-title">Dashboard</span>
               </a>
@@ -116,15 +116,15 @@
             <li class="nav-item nav-category">Options</li>
             
             <li class="nav-item">
-              <a class="nav-link" href="U_salary_slip.html">
+              <a class="nav-link" href="salary_slips.html">
                 <i class="menu-icon mdi mdi-file-document"></i>
-                <span class="menu-title">My Salary Slip</span>
+                <span class="menu-title">Salary Slips</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="profile.html">
+              <a class="nav-link" href="users.html">
                 <i class="menu-icon mdi mdi-account-circle-outline"></i>
-                <span class="menu-title">Profile</span>
+                <span class="menu-title">Users</span>
               </a>
             </li>
           </ul>
@@ -135,6 +135,57 @@
             <div class="row">
               <div class="col-sm-12">
                 
+                <div class="col-md-6 grid-margin stretch-card">
+                  <div class="card">
+                    <div class="card-body">
+                      <h4 class="card-title">Calculate The Salary</h4>
+                      <p class="card-description"> For August </p>
+                      <div class="form-group">
+                        <div class="input-group">
+                          <input type="text" class="form-control" placeholder="Employee's username" aria-label="Recipient's username">
+                          <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">Search</button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div class="input-group">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text">With</span>
+                          </div>
+                          <input type="text" class="form-control" value="Basic Salary + All Allowances" aria-label="Username" disabled>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div class="input-group">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text bg-primary text-white">OT Hours</span>
+                          </div>
+                          <input type="text" class="form-control" aria-label="Amount (to the nearest dollar)">
+                          <div class="input-group-append">
+                            <span class="input-group-text">.00</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div class="input-group">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text">Other Payments</span>
+                          </div>
+                          <div class="input-group-prepend">
+                            <span class="input-group-text">LKR</span>
+                          </div>
+                          <input type="text" class="form-control" aria-label="Amount (to the nearest dollar)">
+                        </div>
+                      </div>
+                      
+                      <button type="submit" class="btn btn-primary me-2">Calculate</button>
+                      <button class="btn btn-light">Cancel</button>
+<br><br><br>
+                      <h4 class="card-title">Total Salary : 230000 LKR</h4>
+                    </div>
+                  </div>
+                </div>
                 
               </div>
             </div>
