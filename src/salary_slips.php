@@ -1,10 +1,51 @@
 <!DOCTYPE html>
+
+<?php
+session_start();
+
+include('db_connection.php'); 
+
+// Check if user is logged in and is an admin
+if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+    // Redirect to error404 page if not an admin
+    header("Location: pages/samples/error-404.html");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+$user_query = $conn->prepare("SELECT * FROM employees WHERE user_id = ?");
+$user_query->bind_param("i", $user_id);
+$user_query->execute();
+$user_result = $user_query->get_result();
+
+if ($user_result->num_rows === 1) {
+    $user = $user_result->fetch_assoc();
+    $firstName = $user['first_name'];
+    $lastName = $user['last_name'];
+    $name = htmlspecialchars($firstName . ' ' . $lastName);
+    $email = $user['email'];
+} else {
+    $username = "Unknown User";
+    $email = "N/A";
+}
+
+$user_query->close();
+
+$ssls = $conn->prepare("SELECT * FROM salary_slip");
+$ssls->execute();
+$ssls_result = $ssls->get_result();
+$ssl = $ssls_result->fetch_all(MYSQLI_ASSOC);
+
+$ssls->close();
+
+?>
+
 <html lang="en">
   <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Star Admin | User </title>
+    <title>Star Admin | Admin</title>
     <!-- plugins:css -->
     <link rel="stylesheet" href="assets/vendors/feather/feather.css">
     <link rel="stylesheet" href="assets/vendors/mdi/css/materialdesignicons.min.css">
@@ -46,8 +87,8 @@
         <div class="navbar-menu-wrapper d-flex align-items-top">
           <ul class="navbar-nav">
             <li class="nav-item fw-semibold d-none d-lg-block ms-0">
-              <h1 class="welcome-text">August <span class="text-black fw-bold"> Salary Slip</span></h1>
-              <h3 class="welcome-sub-text">Your salary slip for August Month </h3>
+              <h1 class="welcome-text">Find All <span class="text-black fw-bold">Salary Slips</span></h1>
+              <h3 class="welcome-sub-text">Manage Salary Slips of Employees </h3>
             </li>
           </ul>
           <ul class="navbar-nav ms-auto">
@@ -85,15 +126,20 @@
             </li>
             <li class="nav-item dropdown d-none d-lg-block user-dropdown">
               <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <img class="img-xs rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image"> </a>
+                <img class="img-xs rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image"> 
+              </a>
               <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
                 <div class="dropdown-header text-center">
                   <img class="img-md rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image">
-                  <p class="mb-1 mt-3 fw-semibold">Allen Moreno</p>
-                  <p class="fw-light text-muted mb-0">allenmoreno@gmail.com</p>
+                  <p class="mb-1 mt-3 fw-semibold"><?php echo htmlspecialchars($name); ?></p>
+                  <p class="fw-light text-muted mb-0"><?php echo htmlspecialchars($email); ?></p>
                 </div>
-                <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile</a>
-                <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Sign Out</a>
+                <a class="dropdown-item" href="profile.php">
+                  <i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile
+                </a>
+                <a class="dropdown-item" href="logout.php">
+                  <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i> Sign Out
+                </a>
               </div>
             </li>
           </ul>
@@ -108,7 +154,7 @@
         <nav class="sidebar sidebar-offcanvas" id="sidebar">
           <ul class="nav">
             <li class="nav-item">
-              <a class="nav-link" href="User Dashboard.html">
+              <a class="nav-link" href="admin_dahboard.php">
                 <i class="mdi mdi-grid-large menu-icon"></i>
                 <span class="menu-title">Dashboard</span>
               </a>
@@ -116,12 +162,17 @@
             <li class="nav-item nav-category">Options</li>
             
             <li class="nav-item">
-              <a class="nav-link" href="U_salary_slip.html">
+              <a class="nav-link" href="salary_slips.php">
                 <i class="menu-icon mdi mdi-file-document"></i>
-                <span class="menu-title">My Salary Slip</span>
+                <span class="menu-title">Salary Slips</span>
               </a>
             </li>
-            
+            <li class="nav-item">
+              <a class="nav-link" href="users.php">
+                <i class="menu-icon mdi mdi-account-circle-outline"></i>
+                <span class="menu-title">Users</span>
+              </a>
+            </li>
           </ul>
         </nav>
         <!-- partial -->
@@ -130,55 +181,45 @@
             <div class="row">
               <div class="col-sm-12">
                 
-                <div class="col-md-6 grid-margin stretch-card">
-                  <div class="card">
+                <div class="col-12 grid-margin stretch-card">
+                  <div class="card card-rounded">
                     <div class="card-body">
-                      <h4 class="card-title">Address</h4>
-                      <p class="card-description"> Use <code>&lt;address&gt;</code> tag </p>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <address>
-                            <p class="fw-bold">Star Admin2 inc.</p>
-                            <p> 695 lsom Ave, </p>
-                            <p> Suite 00 </p>
-                            <p> San Francisco, CA 94107 </p>
-                          </address>
+                      <div class="d-sm-flex justify-content-between align-items-start">
+                        <div>
+                          <h4 class="card-title card-title-dash">StarAdmin Employees</h4>
+                          <p class="card-subtitle card-subtitle-dash">You have <?php echo count($ssl); ?> Salary Slips</p>
                         </div>
-                        <div class="col-md-6">
-                          <address class="text-primary">
-                            <p class="fw-bold"> E-mail </p>
-                            <p class="mb-2"> johndoe@examplemeail.com </p>
-                            <p class="fw-bold"> Web Address </p>
-                            <p> www.starAdminPro.com </p>
-                          </address>
+                        <div>
+                          <a href="calculate.php" style="color:white;"><button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i>Add Salary Slip</button></a>
                         </div>
                       </div>
-                    </div>
-                    <div class="card-body">
-                      <h4 class="card-title">Lead</h4>
-                      <p class="card-description"> Use class <code>.lead</code>
-                      </p>
-                      <p class="lead"> Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. </p>
-                    </div>
-                    <div class="card">
-                      <div class="card-body">
-                        <h4 class="card-title">List Unordered</h4>
-                        <ul>
-                          <li>Lorem ipsum dolor sit amet</li>
-                          <li>Consectetur adipiscing elit</li>
-                          <li>Integer molestie lorem at massa</li>
-                          <li>Facilisis in pretium nisl aliquet</li>
-                          <li>Nulla volutpat aliquam velit</li>
-                        </ul>
+                      <div class="table-responsive  mt-1">
+                        <table class="table select-table">
+                          <thead>
+                            <tr>
+                              <th>
+                                <div class="form-check form-check-flat mt-0">
+                                  <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" aria-checked="false" id="check-all"><i class="input-helper"></i></label>
+                                </div>
+                              </th>
+                              <th>Employee</th>
+                              <th>Month</th>
+                              <th>Position</th>
+                              <th>Basic Salary</th>
+                              <th>Allowances</th>
+                              <th>Other Allowances</th>
+                              <th>Gross Salary</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          <?php
+                          // Include the PHP script that fetches salary slips data
+                          include('fetch_salary_slips.php');
+                          ?>
+                          </tbody>
+                        </table>
                       </div>
-                    </div>
-                    <div class="card-body">
-                      <h4 class="card-title">Blockquotes</h4>
-                      <p class="card-description"> Wrap content inside<code>&lt;blockquote class="blockquote"&gt;</code>
-                      </p>
-                      <blockquote class="blockquote">
-                        <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
-                      </blockquote>
                     </div>
                   </div>
                 </div>

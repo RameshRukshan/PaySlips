@@ -1,4 +1,40 @@
 <!DOCTYPE html>
+
+<?php
+session_start();
+
+include('db_connection.php'); 
+
+// Check if user is logged in and is an admin
+if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'user') {
+    // Redirect to error404 page if not an admin
+    header("Location: pages/samples/error-404.html");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+$user_query = $conn->prepare("SELECT * FROM employees WHERE user_id = ?");
+$user_query->bind_param("i", $user_id);
+$user_query->execute();
+$user_result = $user_query->get_result();
+
+if ($user_result->num_rows === 1) {
+    $user = $user_result->fetch_assoc();
+    $firstName = $user['first_name'];
+    $lastName = $user['last_name'];
+    $name = htmlspecialchars($firstName . ' ' . $lastName);
+    $email = $user['email'];
+} else {
+    $username = "Unknown User";
+    $email = "N/A";
+}
+
+$user_query->close();
+
+$conn->close();
+
+?>
+
 <html lang="en">
   <head>
     <!-- Required meta tags -->
@@ -44,9 +80,9 @@
           </div>
         </div>
         <div class="navbar-menu-wrapper d-flex align-items-top">
-          <ul class="navbar-nav">
+        <ul class="navbar-nav">
             <li class="nav-item fw-semibold d-none d-lg-block ms-0">
-              <h1 class="welcome-text">Good Morning, <span class="text-black fw-bold">John Doe</span></h1>
+              <h1 class="welcome-text">Good Morning, <span class="text-black fw-bold"><?php echo $name; ?></span></h1>
               <h3 class="welcome-sub-text">Your performance summary this week </h3>
             </li>
           </ul>
@@ -85,15 +121,20 @@
             </li>
             <li class="nav-item dropdown d-none d-lg-block user-dropdown">
               <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <img class="img-xs rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image"> </a>
+                <img class="img-xs rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image"> 
+              </a>
               <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
                 <div class="dropdown-header text-center">
                   <img class="img-md rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image">
-                  <p class="mb-1 mt-3 fw-semibold">Allen Moreno</p>
-                  <p class="fw-light text-muted mb-0">allenmoreno@gmail.com</p>
+                  <p class="mb-1 mt-3 fw-semibold"><?php echo htmlspecialchars($name); ?></p>
+                  <p class="fw-light text-muted mb-0"><?php echo htmlspecialchars($email); ?></p>
                 </div>
-                <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile</a>
-                <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Sign Out</a>
+                <a class="dropdown-item" href="profile.php">
+                  <i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile
+                </a>
+                <a class="dropdown-item" href="logout.php">
+                  <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i> Sign Out
+                </a>
               </div>
             </li>
           </ul>
@@ -108,7 +149,7 @@
         <nav class="sidebar sidebar-offcanvas" id="sidebar">
           <ul class="nav">
             <li class="nav-item">
-              <a class="nav-link" href="User Dashboard.html">
+              <a class="nav-link" href="User Dashboard.php">
                 <i class="mdi mdi-grid-large menu-icon"></i>
                 <span class="menu-title">Dashboard</span>
               </a>
@@ -116,7 +157,7 @@
             <li class="nav-item nav-category">Options</li>
             
             <li class="nav-item">
-              <a class="nav-link" href="U_salary_slip.html">
+              <a class="nav-link" href="U_salary_slip.php">
                 <i class="menu-icon mdi mdi-file-document"></i>
                 <span class="menu-title">My Salary Slip</span>
               </a>
@@ -255,7 +296,7 @@
           <!-- partial:partials/_footer.html -->
           <footer class="footer">
             <div class="d-sm-flex justify-content-center justify-content-sm-between">
-              <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Created By <a href="https://www.bootstrapdash.com/" target="_blank">YR3COBSCCOMP23.2F-019</a> | Ramesh.</span>
+              <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Created By <a href="https://github.com/RameshRukshan" target="_blank">YR3COBSCCOMP23.2F-019</a> | Ramesh.</span>
               <span class="float-none float-sm-end d-block mt-1 mt-sm-0 text-center">Copyright © 2024. All rights reserved.</span>
             </div>
           </footer>

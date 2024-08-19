@@ -1,4 +1,68 @@
 <!DOCTYPE html>
+
+<?php
+session_start();
+
+include('db_connection.php'); 
+
+// Check if user is logged in and is an admin
+if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'user') {
+    // Redirect to error404 page if not an admin
+    header("Location: pages/samples/error-404.html");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+$user_query = $conn->prepare("SELECT * FROM employees WHERE user_id = ?");
+$user_query->bind_param("i", $user_id);
+$user_query->execute();
+$user_result = $user_query->get_result();
+
+if ($user_result->num_rows === 1) {
+    $user = $user_result->fetch_assoc();
+    $firstName = $user['first_name'];
+    $lastName = $user['last_name'];
+    $name = htmlspecialchars($firstName . ' ' . $lastName);
+    $email = $user['email'];
+} else {
+    $username = "Unknown User";
+    $email = "N/A";
+}
+
+$user_query->close();
+
+$user_id = $_SESSION['user_id'];
+
+// Fetch user data
+$stmt = $conn->prepare("SELECT first_name, last_name FROM employees WHERE user_id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+$name = htmlspecialchars($user['first_name'] . ' ' . $user['last_name']);
+
+// Fetch salary slips
+$stmt = $conn->prepare("
+    SELECT s.user_id, s.date_created, s.ot, s.other, s.total, sa.basic_salary, sa.travel_all, sa.meal_all, sa.other_all, s.row_id
+    FROM salary_slip s
+    JOIN salaries sa ON s.user_id = sa.user_id
+    WHERE s.user_id = ?
+");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$salary_slips = $stmt->get_result();
+
+$employee_query = $conn->prepare("SELECT * FROM salary_slip where user_id = $user_id");
+$employee_query->execute();
+$employee_result = $employee_query->get_result();
+$employees = $employee_result->fetch_all(MYSQLI_ASSOC);
+
+$employee_query->close();
+
+$conn->close();
+
+?>
+
 <html lang="en">
   <head>
     <!-- Required meta tags -->
@@ -46,8 +110,8 @@
         <div class="navbar-menu-wrapper d-flex align-items-top">
           <ul class="navbar-nav">
             <li class="nav-item fw-semibold d-none d-lg-block ms-0">
-              <h1 class="welcome-text">August <span class="text-black fw-bold"> Salary Slip</span></h1>
-              <h3 class="welcome-sub-text">Your salary slip for August Month </h3>
+              <h1 class="welcome-text">Find the <span class="text-black fw-bold">Salary Slips</span></h1>
+              <h3 class="welcome-sub-text">Your all Salary Slips </h3>
             </li>
           </ul>
           <ul class="navbar-nav ms-auto">
@@ -85,15 +149,20 @@
             </li>
             <li class="nav-item dropdown d-none d-lg-block user-dropdown">
               <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <img class="img-xs rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image"> </a>
+                <img class="img-xs rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image"> 
+              </a>
               <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
                 <div class="dropdown-header text-center">
                   <img class="img-md rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image">
-                  <p class="mb-1 mt-3 fw-semibold">Allen Moreno</p>
-                  <p class="fw-light text-muted mb-0">allenmoreno@gmail.com</p>
+                  <p class="mb-1 mt-3 fw-semibold"><?php echo htmlspecialchars($name); ?></p>
+                  <p class="fw-light text-muted mb-0"><?php echo htmlspecialchars($email); ?></p>
                 </div>
-                <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile</a>
-                <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Sign Out</a>
+                <a class="dropdown-item" href="profile.php">
+                  <i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile
+                </a>
+                <a class="dropdown-item" href="logout.php">
+                  <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i> Sign Out
+                </a>
               </div>
             </li>
           </ul>
@@ -108,7 +177,7 @@
         <nav class="sidebar sidebar-offcanvas" id="sidebar">
           <ul class="nav">
             <li class="nav-item">
-              <a class="nav-link" href="User Dashboard.html">
+              <a class="nav-link" href="User Dashboard.php">
                 <i class="mdi mdi-grid-large menu-icon"></i>
                 <span class="menu-title">Dashboard</span>
               </a>
@@ -116,7 +185,7 @@
             <li class="nav-item nav-category">Options</li>
             
             <li class="nav-item">
-              <a class="nav-link" href="U_salary_slip.html">
+              <a class="nav-link" href="U_salary_slip.php">
                 <i class="menu-icon mdi mdi-file-document"></i>
                 <span class="menu-title">My Salary Slip</span>
               </a>
@@ -130,59 +199,79 @@
             <div class="row">
               <div class="col-sm-12">
                 
-                <div class="col-md-6 grid-margin stretch-card">
-                  <div class="card">
+                <div class="col-12 grid-margin stretch-card">
+                  <div class="card card-rounded">
                     <div class="card-body">
-                      <h4 class="card-title">Address</h4>
-                      <p class="card-description"> Use <code>&lt;address&gt;</code> tag </p>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <address>
-                            <p class="fw-bold">Star Admin2 inc.</p>
-                            <p> 695 lsom Ave, </p>
-                            <p> Suite 00 </p>
-                            <p> San Francisco, CA 94107 </p>
-                          </address>
+                      <div class="d-sm-flex justify-content-between align-items-start">
+                        <div>
+                          <h4 class="card-title card-title-dash"><?php echo htmlspecialchars($name); ?>'s Salary Slips</h4>
+                          <p class="card-subtitle card-subtitle-dash">You have <?php echo count($employees); ?> Slips</p>
                         </div>
-                        <div class="col-md-6">
-                          <address class="text-primary">
-                            <p class="fw-bold"> E-mail </p>
-                            <p class="mb-2"> johndoe@examplemeail.com </p>
-                            <p class="fw-bold"> Web Address </p>
-                            <p> www.starAdminPro.com </p>
-                          </address>
-                        </div>
+                        
                       </div>
-                    </div>
-                    <div class="card-body">
-                      <h4 class="card-title">Lead</h4>
-                      <p class="card-description"> Use class <code>.lead</code>
-                      </p>
-                      <p class="lead"> Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. </p>
-                    </div>
-                    <div class="card">
-                      <div class="card-body">
-                        <h4 class="card-title">List Unordered</h4>
-                        <ul>
-                          <li>Lorem ipsum dolor sit amet</li>
-                          <li>Consectetur adipiscing elit</li>
-                          <li>Integer molestie lorem at massa</li>
-                          <li>Facilisis in pretium nisl aliquet</li>
-                          <li>Nulla volutpat aliquam velit</li>
-                        </ul>
+                      <div class="table-responsive  mt-1">
+                        <table class="table select-table">
+                          <thead>
+                            <tr>
+                              <th>
+                                <div class="form-check form-check-flat mt-0">
+                                  <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" aria-checked="false" id="check-all"><i class="input-helper"></i></label>
+                                </div>
+                              </th>
+                              <th>Month</th>
+                              <th>Date</th>
+                              <th>Basic Salary</th>
+                              <th>Allowances</th>
+                              <th>Total Salary</th>
+                              <th>View</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <?php while ($slip = $salary_slips->fetch_assoc()): ?>
+                                <tr>
+                                    <td>
+                                        <div class="form-check form-check-flat mt-0">
+                                            <label class="form-check-label">
+                                                <input type="checkbox" class="form-check-input" aria-checked="false"><i class="input-helper"></i></label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <h6><?php echo date('F', strtotime($slip['date_created'])); ?></h6>
+                                        <p><?php echo date('Y', strtotime($slip['date_created'])); ?></p>
+                                    </td>
+                                    <td>
+                                        <h6><?php echo date('Y-m-d', strtotime($slip['date_created'])); ?></h6>
+                                    </td>
+                                    <td>
+                                        <h6><?php echo number_format($slip['basic_salary'], 2); ?> LKR</h6>
+                                    </td>
+                                    <td>
+                                        <h6>
+                                            Travel: <?php echo number_format($slip['travel_all'], 2); ?> LKR<br>
+                                            Meal: <?php echo number_format($slip['meal_all'], 2); ?> LKR<br>
+                                            Other: <?php echo number_format($slip['other_all'], 2); ?> LKR
+                                        </h6>
+                                    </td>
+                                    <td>
+                                        <h6><?php echo number_format($slip['total'], 2); ?> LKR</h6>
+                                    </td>
+                                    <td>
+                                        <a href="view_slip.php?id=<?php echo $slip['row_id']; ?>">
+                                            <button type="button" class="btn btn-primary btn-rounded btn-icon">
+                                                <i class="ti-eye"></i>
+                                            </button>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                        </table>
                       </div>
-                    </div>
-                    <div class="card-body">
-                      <h4 class="card-title">Blockquotes</h4>
-                      <p class="card-description"> Wrap content inside<code>&lt;blockquote class="blockquote"&gt;</code>
-                      </p>
-                      <blockquote class="blockquote">
-                        <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
-                      </blockquote>
                     </div>
                   </div>
                 </div>
-                
+
               </div>
             </div>
           </div>

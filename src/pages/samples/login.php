@@ -26,8 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($result->num_rows == 1) {
             $user = $result->fetch_assoc();
             
-            // Verify password using MD5 (assuming it's hashed with MD5 in the database)
-            if (md5($password) === $user['password']) {
+            if (password_verify($password, $user['password'])) {
                 // Set session variables
                 $_SESSION['user_id'] = $user['user_id'];
                 $_SESSION['user_role'] = $user['role'];
@@ -37,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     header("Location: ../../admin_dashboard.php");
                     exit();
                 } elseif ($user['role'] === 'user') {
-                    header("Location: ../../user_dashboard.php");
+                    header("Location: ../../User Dashboard.php");
                     exit();
                 }
             } else {

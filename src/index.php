@@ -16,7 +16,7 @@ if ($user_role === 'admin') {
     header("Location: admin_dashboard.php");
     exit();
 } elseif ($user_role === 'user') {
-    header("Location: User dashboard.php");
+    header("Location: User Dashboard.php");
     exit();
 } else {
     // If the role is not recognized, log the user out and redirect to login

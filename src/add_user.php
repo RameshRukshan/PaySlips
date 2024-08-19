@@ -8,7 +8,7 @@ include('db_connection.php');
 // Check if user is logged in and is an admin
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
     // Redirect to error404 page if not an admin
-    header("Location: error404.php");
+    header("Location: pages/samples/error-404.html");
     exit();
 }
 
@@ -396,7 +396,7 @@ $conn->close();
           <!-- partial:partials/_footer.html -->
           <footer class="footer">
             <div class="d-sm-flex justify-content-center justify-content-sm-between">
-              <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Created By <a href="https://www.bootstrapdash.com/" target="_blank">YR3COBSCCOMP23.2F-019</a> | Ramesh.</span>
+              <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Created By <a href="https://github.com/RameshRukshan" target="_blank">YR3COBSCCOMP23.2F-019</a> | Ramesh.</span>
               <span class="float-none float-sm-end d-block mt-1 mt-sm-0 text-center">Copyright © 2024. All rights reserved.</span>
             </div>
           </footer>

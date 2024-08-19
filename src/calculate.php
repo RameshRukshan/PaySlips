@@ -31,12 +31,6 @@ if ($user_result->num_rows === 1) {
 
 $user_query->close();
 
-$employee_query = $conn->prepare("SELECT * FROM employees");
-$employee_query->execute();
-$employee_result = $employee_query->get_result();
-$employees = $employee_result->fetch_all(MYSQLI_ASSOC);
-
-$employee_query->close();
 $conn->close();
 
 ?>
@@ -88,8 +82,8 @@ $conn->close();
         <div class="navbar-menu-wrapper d-flex align-items-top">
           <ul class="navbar-nav">
             <li class="nav-item fw-semibold d-none d-lg-block ms-0">
-              <h1 class="welcome-text">All, <span class="text-black fw-bold">Users</span></h1>
-              <h3 class="welcome-sub-text">Manage the Users </h3>
+              <h1 class="welcome-text">Salary <span class="text-black fw-bold">Calculate</span></h1>
+              <h3 class="welcome-sub-text">Calculate the Monthly Salary and Send the slip to user </h3>
             </li>
           </ul>
           <ul class="navbar-nav ms-auto">
@@ -182,73 +176,153 @@ $conn->close();
             <div class="row">
               <div class="col-sm-12">
                 
-                <div class="col-12 grid-margin stretch-card">
-                  <div class="card card-rounded">
-                    <div class="card-body">
-                      <div class="d-sm-flex justify-content-between align-items-start">
-                      <div>
-                          <h4 class="card-title card-title-dash">StarAdmin Employees</h4>
-                          <p class="card-subtitle card-subtitle-dash">You have <?php echo count($employees); ?> Employees</p>
+              <div class="col-md-6 grid-margin stretch-card">
+                <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Calculate The Salary</h4>
+                  <p class="card-description">For <span id="current-month"></span></p>
+                  <!-- Your form elements go here -->
+                
+
+                <script>
+                  $(document).ready(function() {
+                    // Get the current month and year
+                    const date = new Date();
+                    const monthNames = [
+                      "January", "February", "March", "April", "May", "June", 
+                      "July", "August", "September", "October", "November", "December"
+                    ];
+                    const currentMonth = monthNames[date.getMonth()]; // Get the month name
+                    const currentYear = date.getFullYear(); // Get the current year
+
+                    // Set the current month and year in the HTML
+                    $('#current-month').text(`${currentMonth} ${currentYear}`);
+                  });
+                </script>
+
+                    <!-- User ID input and Search button -->
+                    <div class="form-group">
+                      <div class="input-group">
+                        <input type="text" id="employee_id" class="form-control" placeholder="Employee's ID" aria-label="Employee's ID">
+                        <div class="input-group-append">
+                          <button class="btn btn-primary" id="searchBtn" type="button">Search</button>
                         </div>
-                        <div>
-                        <a href="add_user.php" style="color:white;"><button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i> Add new member</button></a>
-                        </div>
-                      </div>
-                      <div class="table-responsive  mt-1">
-                        <table class="table select-table">
-                          <thead>
-                            <tr>
-                              <th>
-                                <div class="form-check form-check-flat mt-0">
-                                  <label class="form-check-label">
-                                    <input type="checkbox" class="form-check-input" aria-checked="false" id="check-all"><i class="input-helper"></i></label>
-                                </div>
-                              </th>
-                              <th>Employee</th>
-                              <th>Date of Birth</th>
-                              <th>Sex</th>
-                              <th>Position</th>
-                              <th>Email</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                                                <?php foreach ($employees as $employee): ?>
-                                                <tr>
-                                                    <td>
-                                                        <div class="form-check form-check-flat mt-0">
-                                                            <label class="form-check-label">
-                                                                <input type="checkbox" class="form-check-input" aria-checked="false"><i class="input-helper"></i></label>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div class="d-flex ">
-                                                                <div>
-                                                                    <h6><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?></h6>
-                                                                    <p><?php echo htmlspecialchars($employee['position']); ?></p>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <h6><?php echo htmlspecialchars($employee['dob']); ?></h6>
-                                                        </td>
-                                                        <td>
-                                                            <h6><?php echo htmlspecialchars($employee['gender']); ?></h6>
-                                                        </td>
-                                                        <td>
-                                                            <div class="badge badge-opacity-warning"><?php echo htmlspecialchars($employee['position']); ?></div>
-                                                        </td>
-                                                        <td>
-                                                            <h6><?php echo htmlspecialchars($employee['email']); ?></h6>
-                                                        </td>
-                                                    </tr>
-                                                    <?php endforeach; ?>
-                                                </tbody>
-                        </table>
                       </div>
                     </div>
+
+                    <!-- Salary Info -->
+                    <div class="form-group">
+                      <label>Basic Salary + All Allowances</label>
+                      <input type="text" id="salary_info" class="form-control" value="" aria-label="Salary Info" disabled>
+                    </div>
+
+                    <!-- OT Hours -->
+                    <div class="form-group">
+                      <label>OT Hours</label>
+                      <div class="input-group">
+                        <input type="number" id="ot_hours" class="form-control" placeholder="Enter OT hours">
+                      </div>
+                    </div>
+
+                    <!-- Other Payments -->
+                    <div class="form-group">
+                      <label>Other Payments (LKR)</label>
+                      <div class="input-group">
+                        <input type="number" id="other_payments" class="form-control" placeholder="Enter other payments">
+                      </div>
+                    </div>
+
+                    <!-- Calculate Button -->
+                    <button type="button" id="calculateBtn" class="btn btn-primary me-2">Calculate</button>
+
+                    <!-- Save Button -->
+                    <button type="button" id="saveBtn" class="btn btn-success" style="display: none;">Save</button>
+
+                    <!-- Display Total Salary -->
+                    <h4 class="card-title mt-3">Total Salary: <span id="total_salary_display">0 LKR</span></h4>
                   </div>
                 </div>
-                
+              </div>
+
+              <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+              <script>
+                $(document).ready(function() {
+                  let basicSalary = 0;
+                  let totalSalary = 0;
+
+                  // Search Button Click Event
+                  $('#searchBtn').click(function() {
+                    const employeeId = $('#employee_id').val();
+
+                    // Fetch employee data
+                    $.ajax({
+                      url: 'fetch_employee_data.php',
+                      method: 'POST',
+                      data: { employee_id: employeeId },
+                      success: function(response) {
+                        console.log("Response from fetch_employee_data.php:", response);
+
+                        if (response.status === 'success') {
+                          // Populate the basic salary + allowances
+                          basicSalary = parseFloat(response.data.basic_salary) + parseFloat(response.data.allowances);
+                          $('#salary_info').val(`${basicSalary} LKR`);
+                          $('#saveBtn').hide(); // Hide save button until Calculate is clicked
+                        } else {
+                          alert(response.message);
+                        }
+                      },
+                      error: function(xhr, status, error) {
+                        console.error("Error fetching employee data:", error);
+                      }
+                    });
+                  });
+
+                  // Calculate Button Click Event
+                  $('#calculateBtn').click(function() {
+                    const otHours = parseFloat($('#ot_hours').val()) || 0;
+                    const otherPayments = parseFloat($('#other_payments').val()) || 0;
+                    const otAmount = otHours * 5000;
+
+                    // Calculate total salary
+                    totalSalary = basicSalary + otAmount + otherPayments;
+                    $('#total_salary_display').text(`${totalSalary} LKR`);
+                    $('#saveBtn').show(); // Show save button after calculating
+                  });
+
+                  // Save Button Click Event
+                  $('#saveBtn').click(function() {
+                    const employeeId = $('#employee_id').val();
+                    const otHours = parseFloat($('#ot_hours').val()) || 0;
+                    const otherPayments = parseFloat($('#other_payments').val()) || 0;
+
+                    // Save data to the database
+                    $.ajax({
+                      url: 'store_salary_slip.php',
+                      method: 'POST',
+                      data: {
+                        employee_id: employeeId,
+                        ot: otHours,
+                        other: otherPayments,
+                        total: totalSalary
+                      },
+                      success: function(response) {
+                        console.log("Response from store_salary_slip.php:", response);
+
+                        if (response.status === 'success') {
+                          alert('Salary slip stored successfully!');
+                        } else {
+                          alert('Error: ' + response.message);
+                        }
+                      },
+                      error: function(xhr, status, error) {
+                        console.error("Error storing salary slip:", error);
+                      }
+                    });
+                  });
+                });
+              </script>
+
+
               </div>
             </div>
           </div>
@@ -267,6 +341,12 @@ $conn->close();
       <!-- page-body-wrapper ends -->
     </div>
     <!-- container-scroller -->
+
+    <!-- jQuery and Bootstrap should be included -->
+    
+    <!-- jQuery and Bootstrap should be included -->
+    
+
     <!-- plugins:js -->
     <script src="assets/vendors/js/vendor.bundle.base.js"></script>
     <script src="assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
