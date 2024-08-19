@@ -31,35 +31,45 @@ if ($user_result->num_rows === 1) {
 
 $user_query->close();
 
-$user_id = $_SESSION['user_id'];
+// Get the slip ID from the URL
+$slip_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Fetch user data
-$stmt = $conn->prepare("SELECT first_name, last_name FROM employees WHERE user_id = ?");
-$stmt->bind_param("i", $user_id);
+// Prepare SQL query to fetch data
+$sql = "
+    SELECT 
+        e.first_name, e.last_name, e.gender, e.dob, e.position, e.email,
+        s.basic_salary, s.travel_all, s.meal_all, s.other_all,
+        ss.date_created, ss.ot, ss.other, ss.total
+    FROM 
+        employees e
+    JOIN 
+        salaries s ON e.user_id = s.user_id
+    JOIN 
+        salary_slip ss ON e.user_id = ss.user_id
+    WHERE 
+        ss.row_id = ? AND e.user_id = ?
+";
+
+// Prepare the statement
+$stmt = $conn->prepare($sql);
+
+// Bind parameters
+$stmt->bind_param("ii", $slip_id, $_SESSION['user_id']);
+
+// Execute the query
 $stmt->execute();
+
+// Get the result
 $result = $stmt->get_result();
-$user = $result->fetch_assoc();
-$name = htmlspecialchars($user['first_name'] . ' ' . $user['last_name']);
 
-// Fetch salary slips
-$stmt = $conn->prepare("
-    SELECT s.user_id, s.date_created, s.ot, s.other, s.total, sa.basic_salary, sa.travel_all, sa.meal_all, sa.other_all, s.row_id
-    FROM salary_slip s
-    JOIN salaries sa ON s.user_id = sa.user_id
-    WHERE s.user_id = ?
-");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$salary_slips = $stmt->get_result();
+if ($result->num_rows == 1) {
+    $slip = $result->fetch_assoc();
+} else {
+    echo "No salary slip found.";
+    exit();
+}
 
-$employee_query = $conn->prepare("SELECT * FROM salary_slip where user_id = $user_id");
-$employee_query->execute();
-$employee_result = $employee_query->get_result();
-$employees = $employee_result->fetch_all(MYSQLI_ASSOC);
-
-$employee_query->close();
-
-$conn->close();
+$stmt->close();
 
 ?>
 
@@ -110,8 +120,8 @@ $conn->close();
         <div class="navbar-menu-wrapper d-flex align-items-top">
           <ul class="navbar-nav">
             <li class="nav-item fw-semibold d-none d-lg-block ms-0">
-              <h1 class="welcome-text">Find the <span class="text-black fw-bold">Salary Slips</span></h1>
-              <h3 class="welcome-sub-text">Your all Salary Slips </h3>
+              <h1 class="welcome-text">August <span class="text-black fw-bold"> Salary Slip</span></h1>
+              <h3 class="welcome-sub-text">Your salary slip for August Month </h3>
             </li>
           </ul>
           <ul class="navbar-nav ms-auto">
@@ -177,7 +187,7 @@ $conn->close();
         <nav class="sidebar sidebar-offcanvas" id="sidebar">
           <ul class="nav">
             <li class="nav-item">
-              <a class="nav-link" href="User Dashboard.php">
+              <a class="nav-link" href="User Dashboard.html">
                 <i class="mdi mdi-grid-large menu-icon"></i>
                 <span class="menu-title">Dashboard</span>
               </a>
@@ -185,7 +195,7 @@ $conn->close();
             <li class="nav-item nav-category">Options</li>
             
             <li class="nav-item">
-              <a class="nav-link" href="U_salary_slip.php">
+              <a class="nav-link" href="U_salary_slip.html">
                 <i class="menu-icon mdi mdi-file-document"></i>
                 <span class="menu-title">My Salary Slip</span>
               </a>
@@ -199,79 +209,32 @@ $conn->close();
             <div class="row">
               <div class="col-sm-12">
                 
-                <div class="col-12 grid-margin stretch-card">
-                  <div class="card card-rounded">
-                    <div class="card-body">
-                      <div class="d-sm-flex justify-content-between align-items-start">
-                        <div>
-                          <h4 class="card-title card-title-dash"><?php echo htmlspecialchars($name); ?>'s Salary Slips</h4>
-                          <p class="card-subtitle card-subtitle-dash">You have <?php echo count($employees); ?> Slips</p>
-                        </div>
-                        
-                      </div>
-                      <div class="table-responsive  mt-1">
-                        <table class="table select-table">
-                          <thead>
-                            <tr>
-                              <th>
-                                <div class="form-check form-check-flat mt-0">
-                                  <label class="form-check-label">
-                                    <input type="checkbox" class="form-check-input" aria-checked="false" id="check-all"><i class="input-helper"></i></label>
-                                </div>
-                              </th>
-                              <th>Month</th>
-                              <th>Date</th>
-                              <th>Basic Salary</th>
-                              <th>Allowances</th>
-                              <th>Total Salary</th>
-                              <th>View</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <?php while ($slip = $salary_slips->fetch_assoc()): ?>
-                                <tr>
-                                    <td>
-                                        <div class="form-check form-check-flat mt-0">
-                                            <label class="form-check-label">
-                                                <input type="checkbox" class="form-check-input" aria-checked="false"><i class="input-helper"></i></label>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <h6><?php echo date('F', strtotime($slip['date_created'])); ?></h6>
-                                        <p><?php echo date('Y', strtotime($slip['date_created'])); ?></p>
-                                    </td>
-                                    <td>
-                                        <h6><?php echo date('Y-m-d', strtotime($slip['date_created'])); ?></h6>
-                                    </td>
-                                    <td>
-                                        <h6><?php echo number_format($slip['basic_salary'], 2); ?> LKR</h6>
-                                    </td>
-                                    <td>
-                                        <h6>
-                                            Travel: <?php echo number_format($slip['travel_all'], 2); ?> LKR<br>
-                                            Meal: <?php echo number_format($slip['meal_all'], 2); ?> LKR<br>
-                                            Other: <?php echo number_format($slip['other_all'], 2); ?> LKR
-                                        </h6>
-                                    </td>
-                                    <td>
-                                        <h6><?php echo number_format($slip['total'], 2); ?> LKR</h6>
-                                    </td>
-                                    <td>
-                                        <a href="slip.php?id=<?php echo $slip['row_id']; ?>">
-                                            <button type="button" class="btn btn-primary btn-rounded btn-icon">
-                                                <i class="ti-eye"></i>
-                                            </button>
-                                        </a>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        </tbody>
-                        </table>
-                      </div>
-                    </div>
+              <div class="card">
+                  <div class="card-body">
+                      <h4 class="card-title">Employee Details</h4>
+                      <p>Name: <?php echo htmlspecialchars($slip['first_name'] . ' ' . $slip['last_name']); ?></p>
+                      <p>Position: <?php echo htmlspecialchars($slip['position']); ?></p>
+                      <p>Email: <?php echo htmlspecialchars($slip['email']); ?></p>
+                      <p>Date of Birth: <?php echo htmlspecialchars($slip['dob']); ?></p>
+                      <p>Gender: <?php echo htmlspecialchars($slip['gender']); ?></p>
+                  </div>
+                  <div class="card-body">
+                      <h4 class="card-title">Salary Details</h4>
+                      <p>Basic Salary: <?php echo number_format($slip['basic_salary'], 2); ?></p>
+                      <p>Travel Allowance: <?php echo number_format($slip['travel_all'], 2); ?></p>
+                      <p>Meal Allowance: <?php echo number_format($slip['meal_all'], 2); ?></p>
+                      <p>Other Allowance: <?php echo number_format($slip['other_all'], 2); ?></p>
+                      <p>Overtime: <?php echo number_format($slip['ot'], 2); ?></p>
+                      <p>Other Earnings: <?php echo number_format($slip['other'], 2); ?></p>
+                      <p>Total Salary: <?php echo number_format($slip['total'], 2); ?></p>
+                  </div>
+             
+                  <div class="card-body">
+                      <h4 class="card-title">Salary Slip Information</h4>
+                      <p>Date Created: <?php echo htmlspecialchars($slip['date_created']); ?></p>
                   </div>
                 </div>
-
+                
               </div>
             </div>
           </div>

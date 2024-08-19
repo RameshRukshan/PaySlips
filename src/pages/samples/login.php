@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="password" name="password" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Password" required>
                   </div>
                   <div class="mt-3 d-grid gap-2">
-                    <button type="submit" class="btn btn-block btn-primary btn-lg fw-medium auth-form-btn">SIGN IN</button>
+                    <button type="submit" class="btn btn-block btn-primary btn-lg fw-medium auth-form-btn" class="g-recaptcha" data-sitekey="reCAPTCHA_site_key" data-callback='onSubmit'data-action='submit'>SIGN IN</button>
                   </div>
                   
                   <div class="text-center mt-4 fw-light"> Don't have an account? 
@@ -129,6 +129,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <script src="../../assets/js/settings.js"></script>
     <script src="../../assets/js/hoverable-collapse.js"></script>
     <script src="../../assets/js/todolist.js"></script>
+
+    <script src="https://www.google.com/recaptcha/api.js?render=6LfzJioqAAAAALyFz0ccIyqZx9t-96gpXCcVoosu"></script>
+
+    
     <!-- endinject -->
   </body>
 </html>
