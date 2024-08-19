@@ -147,7 +147,7 @@ $user_query->close();
         <nav class="sidebar sidebar-offcanvas" id="sidebar">
           <ul class="nav">
             <li class="nav-item">
-              <a class="nav-link" href="admin_dahboard.php">
+              <a class="nav-link" href="admin_dashboard.php">
                 <i class="mdi mdi-grid-large menu-icon"></i>
                 <span class="menu-title">Dashboard</span>
               </a>
@@ -179,36 +179,69 @@ $user_query->close();
                     <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
                       <div class="row">
                         <div class="col-sm-12">
-                          <div class="statistics-details d-flex align-items-center justify-content-between">
+
+                          <?php
+                            // Fetch total number of employees
+                            $employee_count_query = "SELECT COUNT(*) AS total_employees FROM employees";
+                            $employee_count_result = $conn->query($employee_count_query);
+                            $total_employees = $employee_count_result->fetch_assoc()['total_employees'];
+
+                            // Fetch total number of salary slips
+                            $slip_count_query = "SELECT COUNT(*) AS total_slips FROM salary_slip";
+                            $slip_count_result = $conn->query($slip_count_query);
+                            $total_slips = $slip_count_result->fetch_assoc()['total_slips'];
+
+                            // Fetch total salary amount (sum of all salary slips)
+                            $total_salary_query = "SELECT SUM(total) AS total_salary_amount FROM salary_slip";
+                            $total_salary_result = $conn->query($total_salary_query);
+                            $total_salary_amount = $total_salary_result->fetch_assoc()['total_salary_amount'];
+
+                            // Fetch total salary slips for the current month
+                            $current_month_slips_query = "SELECT COUNT(*) AS current_month_slips FROM salary_slip WHERE MONTH(date_created) = MONTH(CURRENT_DATE()) AND YEAR(date_created) = YEAR(CURRENT_DATE())";
+                            $current_month_slips_result = $conn->query($current_month_slips_query);
+                            $current_month_slips = $current_month_slips_result->fetch_assoc()['current_month_slips'];
+
+                            // Fetch total "other" allowances from the salary slip table
+                            $total_other_query = "SELECT SUM(other) AS total_other_allowances FROM salary_slip";
+                            $total_other_result = $conn->query($total_other_query);
+                            $total_other_allowances = $total_other_result->fetch_assoc()['total_other_allowances'];
+
+                            // Fetch total OT hours from the salary slip table
+                            $total_ot_query = "SELECT SUM(ot) AS total_ot_hours FROM salary_slip";
+                            $total_ot_result = $conn->query($total_ot_query);
+                            $total_ot_hours = $total_ot_result->fetch_assoc()['total_ot_hours'];
+                          ?>
+
+                            <div class="statistics-details d-flex align-items-center justify-content-between">
                             <div>
-                              <p class="statistics-title">Bounce Rate</p>
-                              <h3 class="rate-percentage">32.53%</h3>
-                              <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>-0.5%</span></p>
+                                <p class="statistics-title">Total Employees</p>
+                                <h3 class="rate-percentage"><?php echo htmlspecialchars($total_employees); ?></h3>
+                                <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+<?php echo htmlspecialchars($total_employees); ?>%</span></p>
                             </div>
                             <div>
-                              <p class="statistics-title">Page Views</p>
-                              <h3 class="rate-percentage">7,682</h3>
-                              <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+0.1%</span></p>
+                                <p class="statistics-title">Total Salary Slips</p>
+                                <h3 class="rate-percentage"><?php echo htmlspecialchars($total_slips); ?></h3>
+                                <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+<?php echo htmlspecialchars($total_slips); ?>%</span></p>
                             </div>
                             <div>
-                              <p class="statistics-title">New Sessions</p>
-                              <h3 class="rate-percentage">68.8</h3>
-                              <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>68.8</span></p>
+                                <p class="statistics-title">Total Salary Amount</p>
+                                <h3 class="rate-percentage"><?php echo htmlspecialchars(number_format($total_salary_amount, 2)); ?></h3>
+                                <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+<?php echo htmlspecialchars(number_format($total_salary_amount, 2)); ?>%</span></p>
                             </div>
                             <div class="d-none d-md-block">
-                              <p class="statistics-title">Avg. Time on Site</p>
-                              <h3 class="rate-percentage">2m:35s</h3>
-                              <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
+                                <p class="statistics-title">Salary Slips This Month</p>
+                                <h3 class="rate-percentage"><?php echo htmlspecialchars($current_month_slips); ?></h3>
+                                <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+<?php echo htmlspecialchars($current_month_slips); ?>%</span></p>
                             </div>
-                            <div class="d-none d-md-block">
-                              <p class="statistics-title">New Sessions</p>
-                              <h3 class="rate-percentage">68.8</h3>
-                              <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>68.8</span></p>
+                            <div>
+                                <p class="statistics-title">Total Other Allowances</p>
+                                <h3 class="rate-percentage"><?php echo htmlspecialchars(number_format($total_other_allowances, 2)); ?></h3>
+                                <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+<?php echo htmlspecialchars(number_format($total_other_allowances, 2)); ?>%</span></p>
                             </div>
-                            <div class="d-none d-md-block">
-                              <p class="statistics-title">Avg. Time on Site</p>
-                              <h3 class="rate-percentage">2m:35s</h3>
-                              <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
+                            <div>
+                                <p class="statistics-title">Total OT Hours</p>
+                                <h3 class="rate-percentage"><?php echo htmlspecialchars($total_ot_hours); ?></h3>
+                                <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+<?php echo htmlspecialchars($total_ot_hours); ?>%</span></p>
                             </div>
                           </div>
                         </div>

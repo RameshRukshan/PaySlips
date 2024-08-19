@@ -198,7 +198,7 @@ $conn->close();
         <nav class="sidebar sidebar-offcanvas" id="sidebar">
           <ul class="nav">
             <li class="nav-item">
-              <a class="nav-link" href="admin_dahboard.php">
+              <a class="nav-link" href="admin_dashboard.php">
                 <i class="mdi mdi-grid-large menu-icon"></i>
                 <span class="menu-title">Dashboard</span>
               </a>
@@ -322,7 +322,7 @@ $conn->close();
                         <div class="form-group row">
                           <label class="col-sm-3 col-form-label">Email Address</label>
                           <div class="col-sm-9">
-                            <input type="email" name="email" class="form-control" required />
+                            <input type="email" name="email" class="form-control" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" title="Please enter a valid email address (e.g., name@example.com)" required />
                           </div>
                         </div>
                       </div>
@@ -332,7 +332,8 @@ $conn->close();
                         <div class="form-group row">
                           <label class="col-sm-3 col-form-label">Password</label>
                           <div class="col-sm-9">
-                            <input type="password" name="password" class="form-control" required />
+                            <input type="password" name="password" class="form-control" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}" 
+                            title="Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character." required />
                           </div>
                         </div>
                       </div>
@@ -340,7 +341,8 @@ $conn->close();
                         <div class="form-group row">
                           <label class="col-sm-3 col-form-label">Password Confirm</label>
                           <div class="col-sm-9">
-                            <input type="password" name="password_confirm" class="form-control" required />
+                            <input type="password" name="password_confirm" class="form-control" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}" 
+                            title="Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character." required />
                           </div>
                         </div>
                       </div>
@@ -351,7 +353,7 @@ $conn->close();
                         <div class="form-group row">
                           <label class="col-sm-3 col-form-label">Basic Salary</label>
                           <div class="col-sm-9">
-                            <input type="text" name="basic_salary" class="form-control" required />
+                            <input type="number" name="basic_salary" min="0" step="0.01" class="form-control" required />
                           </div>
                         </div>
                       </div>
@@ -359,7 +361,7 @@ $conn->close();
                         <div class="form-group row">
                           <label class="col-sm-3 col-form-label">Travel Allowance</label>
                           <div class="col-sm-9">
-                            <input type="text" name="travel_allowance" class="form-control" required />
+                            <input type="number" name="travel_allowance" min="0" step="0.01" class="form-control" required />
                           </div>
                         </div>
                       </div>
@@ -369,7 +371,7 @@ $conn->close();
                         <div class="form-group row">
                           <label class="col-sm-3 col-form-label">Meal Allowance</label>
                           <div class="col-sm-9">
-                            <input type="text" name="meal_allowance" class="form-control" required />
+                            <input type="number" name="meal_allowance" min="0" step="0.01" class="form-control" required />
                           </div>
                         </div>
                       </div>
@@ -377,7 +379,7 @@ $conn->close();
                           <div class="form-group row">
                             <label class="col-sm-3 col-form-label">Other Allowances</label>
                             <div class="col-sm-9">
-                              <input type="password" name="other_allowances" class="form-control" />
+                              <input type="number" name="other_allowances" min="0" step="0.01" class="form-control" />
                             </div>
                           </div>
                         </div>

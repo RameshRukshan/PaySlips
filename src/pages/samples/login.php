@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   </div>
                   
                   <div class="text-center mt-4 fw-light"> Don't have an account? 
-                    <a href="register.html" class="text-primary">Create</a>
+                    <a href="mailto:programes@nibm.lk" class="text-primary">Send a Request to Admin</a>
                   </div>
                 </form>
               </div>
