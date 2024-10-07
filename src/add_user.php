@@ -264,7 +264,7 @@ $conn->close();
                         <div class="form-group row">
                           <label class="col-sm-3 col-form-label">Date of Birth</label>
                           <div class="col-sm-9">
-                            <input name="dob" class="form-control" placeholder="dd/mm/yyyy" required />
+                            <input name="dob" class="form-control" placeholder="yyyy-mm-dd" required />
                           </div>
                         </div>
                       </div>
